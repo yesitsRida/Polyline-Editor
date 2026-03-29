@@ -33,9 +33,25 @@ export default function PolyLineEditor() {
   const [hoveredPoint, setHoveredPoint] = useState<{ polylineIdx: number; pointIdx: number } | null>(null);
   const [showRefWindow, setShowRefWindow] = useState(true);
   const [canvasDims, setCanvasDims] = useState({ width: 1000, height: 600 });
+  const [mood, setMood] = useState<number>(0);
+  const [glitters, setGlitters] = useState<Array<{ x: number; y: number; id: number }>>([]);
+  const [windowPos, setWindowPos] = useState({ x: 600, y: 100 });
+  const [isDraggingWindow, setIsDraggingWindow] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const POINT_RADIUS = 6;
   const HOVER_DISTANCE = 15;
+
+  // Glitter burst effect
+  const createGlitterBurst = (x: number, y: number) => {
+    const newGlitters = Array.from({ length: 15 }, (_, i) => ({
+      x,
+      y,
+      id: Date.now() + i,
+    }));
+    setGlitters(newGlitters);
+    setTimeout(() => setGlitters([]), 800);
+  };
 
   // Set canvas dimensions on mount
   useEffect(() => {
@@ -339,16 +355,15 @@ export default function PolyLineEditor() {
               }
               setMode('begin');
             }}
-            className={`w-full p-3 rounded-xl border-3 transition-all ${
+            className={`w-full p-3 rounded-xl border-3 transition-all font-['Quicksand'] font-bold ${
               mode === 'begin'
                 ? 'bg-green-300 border-green-500 shadow-lg text-green-800'
                 : 'bg-green-200 border-green-400 hover:bg-green-300 text-green-800'
             }`}
           >
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">✏️</span>
-              <span className="font-bold text-sm">BEGIN</span>
-              <span className="ml-auto bg-white px-2 py-0.5 rounded text-xs font-bold border border-green-400">B</span>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm">BEGIN</span>
+              <span className="bg-white px-2 py-0.5 rounded text-xs font-bold border border-green-400">B</span>
             </div>
             <p className="text-xs font-medium">Start a new polyline</p>
           </button>
@@ -356,16 +371,15 @@ export default function PolyLineEditor() {
           {/* Delete Button */}
           <button
             onClick={() => setMode('delete')}
-            className={`w-full p-3 rounded-xl border-3 transition-all ${
+            className={`w-full p-3 rounded-xl border-3 transition-all font-['Quicksand'] font-bold ${
               mode === 'delete'
                 ? 'bg-red-300 border-red-500 shadow-lg text-red-800'
                 : 'bg-red-200 border-red-400 hover:bg-red-300 text-red-800'
             }`}
           >
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">🗑️</span>
-              <span className="font-bold text-sm">DELETE</span>
-              <span className="ml-auto bg-white px-2 py-0.5 rounded text-xs font-bold border border-red-400">D</span>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm">DELETE</span>
+              <span className="bg-white px-2 py-0.5 rounded text-xs font-bold border border-red-400">D</span>
             </div>
             <p className="text-xs font-medium">Delete nearest point</p>
           </button>
@@ -377,33 +391,17 @@ export default function PolyLineEditor() {
               setSelectedPolylineIndex(null);
               setSelectedPointIndex(null);
             }}
-            className={`w-full p-3 rounded-xl border-3 transition-all ${
+            className={`w-full p-3 rounded-xl border-3 transition-all font-['Quicksand'] font-bold ${
               mode === 'move'
                 ? 'bg-pink-300 border-pink-500 shadow-lg text-pink-800'
                 : 'bg-pink-200 border-pink-400 hover:bg-pink-300 text-pink-800'
             }`}
           >
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">✋</span>
-              <span className="font-bold text-sm">MOVE</span>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm">MOVE</span>
               <span className="ml-auto bg-white px-2 py-0.5 rounded text-xs font-bold border border-pink-400">M</span>
             </div>
             <p className="text-xs font-medium">Drag point to new location</p>
-          </button>
-
-          {/* Refresh Button */}
-          <button
-            onClick={() => {
-              setPolylines([...polylines]);
-            }}
-            className="w-full p-3 rounded-xl border-3 bg-purple-200 border-purple-400 hover:bg-purple-300 text-purple-800 transition-all"
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">🔄</span>
-              <span className="font-bold text-sm">REFRESH</span>
-              <span className="ml-auto bg-white px-2 py-0.5 rounded text-xs font-bold border border-purple-400">R</span>
-            </div>
-            <p className="text-xs font-medium">Redraw all polylines</p>
           </button>
 
           {/* Quit Button */}
@@ -415,25 +413,31 @@ export default function PolyLineEditor() {
               setSelectedPolylineIndex(null);
               setSelectedPointIndex(null);
             }}
-            className="w-full p-3 rounded-xl border-3 bg-blue-200 border-blue-400 hover:bg-blue-300 text-blue-800 transition-all"
+            className="w-full p-3 rounded-xl border-3 bg-blue-200 border-blue-400 hover:bg-blue-300 text-blue-800 transition-all font-['Quicksand'] font-bold"
           >
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl">❌</span>
-              <span className="font-bold text-sm">QUIT</span>
-              <span className="ml-auto bg-white px-2 py-0.5 rounded text-xs font-bold border border-blue-400">Q</span>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-sm">QUIT</span>
+              <span className="bg-white px-2 py-0.5 rounded text-xs font-bold border border-blue-400">Q</span>
             </div>
             <p className="text-xs font-medium">Exit / Reset canvas</p>
           </button>
         </div>
 
-        {/* Cute emoji bar */}
-        <div className="mt-6 p-3 bg-white rounded-lg border-2 border-pink-300 text-center space-y-2">
-          <p className="text-xs font-bold text-pink-700">Pixel Friends</p>
-          <div className="flex justify-center gap-2 text-lg">
-            <span>💖</span>
-            <span>⭐</span>
-            <span>🎨</span>
-            <span>✨</span>
+        {/* Mood Selector */}
+        <div className="mt-6 p-3 bg-white rounded-xl border-3 border-pink-300 text-center space-y-2">
+          <p className="text-xs font-bold text-pink-700 font-['Quicksand']">MOOD:</p>
+          <div className="flex justify-center gap-1">
+            {[1, 2, 3, 4, 5].map((m) => (
+              <button
+                key={m}
+                onClick={() => setMood(m)}
+                className={`text-xl transition-all ${
+                  mood === m ? 'scale-125' : 'hover:scale-110'
+                }`}
+              >
+                {m === 1 ? '😞' : m === 2 ? '😐' : m === 3 ? '😊' : m === 4 ? '😄' : '🤩'}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -455,19 +459,73 @@ export default function PolyLineEditor() {
           onClick={handleCanvasClick}
           onDoubleClick={finishPolyline}
           className="flex-1 cursor-crosshair"
+          suppressHydrationWarning
         />
 
-        {/* Floating "Meow!" indicator */}
-        <div className="absolute top-6 right-6 bg-white px-4 py-2 rounded-full border-3 border-pink-400 shadow-lg">
-          <span className="text-2xl">😻</span>
-          <p className="text-xs font-bold text-pink-700 mt-1">Meow!</p>
+        {/* Floating Glitter Bow Button */}
+        <div className="absolute top-6 right-6 relative">
+          <button
+            onClick={(e) => createGlitterBurst(e.currentTarget.offsetLeft + 20, e.currentTarget.offsetTop + 20)}
+            className="text-5xl hover:scale-110 transition-transform cursor-pointer"
+          >
+            🎀
+          </button>
+          {glitters.map((g) => (
+            <div
+              key={g.id}
+              className="absolute pointer-events-none animate-pulse"
+              style={{
+                left: g.x,
+                top: g.y,
+                fontSize: '12px',
+                animation: `burst 0.8s ease-out forwards`,
+              }}
+            >
+              ✨
+            </div>
+          ))}
         </div>
 
-        {/* Floating Build Ideas Window */}
+        <style>{`
+          @keyframes burst {
+            0% {
+              opacity: 1;
+              transform: translate(0, 0) scale(1);
+            }
+            100% {
+              opacity: 0;
+              transform: translate(var(--tx, 20px), var(--ty, 20px)) scale(0);
+            }
+          }
+          div[style*="left"] {
+            --tx: ${Math.random() * 60 - 30}px;
+            --ty: ${Math.random() * 60 - 30}px;
+          }
+        `}</style>
+
+        {/* Floating Build Ideas Window - Draggable */}
         {showRefWindow && (
-          <div className="absolute right-6 top-24 w-80 bg-white rounded-xl border-4 border-yellow-300 shadow-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-yellow-300 to-orange-200 p-3 flex items-center justify-between">
-              <h3 className="font-bold text-sm text-gray-800">BUILD IDEAS</h3>
+          <div
+            className="absolute w-64 bg-white rounded-xl border-4 border-yellow-300 shadow-xl overflow-hidden cursor-move"
+            style={{
+              left: `${windowPos.x}px`,
+              top: `${windowPos.y}px`,
+            }}
+            onMouseDown={(e) => {
+              if (e.currentTarget.querySelector('[data-drag-handle]')?.contains(e.target as Node)) {
+                setIsDraggingWindow(true);
+                setDragOffset({
+                  x: e.clientX - windowPos.x,
+                  y: e.clientY - windowPos.y,
+                });
+              }
+            }}
+          >
+            <div
+              data-drag-handle
+              className="bg-gradient-to-r from-yellow-300 to-orange-200 p-2 flex items-center justify-between cursor-grab active:cursor-grabbing"
+            >
+              <h3 className="font-bold text-xs text-gray-800 font-['Quicksand']">BUILD IDEAS</h3>
               <button
                 onClick={() => setShowRefWindow(false)}
                 className="bg-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-gray-200"
@@ -475,25 +533,45 @@ export default function PolyLineEditor() {
                 ×
               </button>
             </div>
-            <div className="p-4 space-y-3 max-h-80 overflow-y-auto bg-yellow-50">
+            <div className="p-3 space-y-2 max-h-64 overflow-y-auto bg-yellow-50">
               {BUILD_IDEAS.map((idea, idx) => (
                 <div
                   key={idx}
-                  className="bg-white p-3 rounded-lg border-2 border-yellow-200 hover:border-yellow-400 cursor-pointer transition-all hover:shadow-md"
+                  className="bg-white p-2 rounded-lg border-2 border-yellow-200 hover:border-yellow-400 cursor-pointer transition-all hover:shadow-md"
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-2xl">{idea.icon}</span>
-                    <span className="font-bold text-sm text-gray-800">{idea.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{idea.icon}</span>
+                    <span className="font-bold text-xs text-gray-800 font-['Quicksand']">{idea.name}</span>
                   </div>
-                  <p className="text-xs text-gray-600 ml-8">{idea.points} points</p>
                 </div>
               ))}
             </div>
           </div>
         )}
+        
+        {isDraggingWindow && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 999,
+            }}
+            onMouseMove={(e) => {
+              setWindowPos({
+                x: e.clientX - dragOffset.x,
+                y: e.clientY - dragOffset.y,
+              });
+            }}
+            onMouseUp={() => setIsDraggingWindow(false)}
+            onMouseLeave={() => setIsDraggingWindow(false)}
+          />
+        )}
 
         {/* Status Bar */}
-        <div className="h-14 bg-gradient-to-r from-pink-300 to-blue-200 border-t-4 border-pink-300 flex items-center px-6 gap-8 shadow-lg">
+        <div className="h-14 bg-gradient-to-r from-pink-300 to-blue-200 border-t-4 border-pink-300 flex items-center px-6 gap-8 shadow-lg font-['Quicksand']">
           <div className="text-sm font-bold">
             <span className="text-gray-600">Mode:</span>
             <span className="ml-2 text-pink-700 uppercase">{mode || 'idle'}</span>
