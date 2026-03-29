@@ -7,8 +7,17 @@ type Point = { x: number; y: number };
 type Polyline = Point[];
 type Mode = 'idle' | 'begin' | 'delete' | 'move';
 
-// Color palette for polylines
-const COLORS = ['#00f0ff', '#00ff00', '#ff6600', '#ff1493', '#9933ff', '#ffff00'];
+// Cute pastel color palette
+const COLORS = ['#ff69b4', '#87ceeb', '#ffd700', '#98d8c8', '#f7a8dc', '#b4a7d6'];
+
+// Build ideas reference shapes
+const BUILD_IDEAS = [
+  { name: 'Tiny house', points: 5, icon: '🏠' },
+  { name: 'Rocket cat', points: 8, icon: '🚀' },
+  { name: 'Bunny face', points: 9, icon: '🐰' },
+  { name: 'Star', points: 10, icon: '⭐' },
+  { name: 'Heart', points: 12, icon: '❤️' },
+];
 
 export default function PolyLineEditor() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -22,11 +31,33 @@ export default function PolyLineEditor() {
   const [selectedPointIndex, setSelectedPointIndex] = useState<number | null>(null);
   const [selectedPolylineIndex, setSelectedPolylineIndex] = useState<number | null>(null);
   const [hoveredPoint, setHoveredPoint] = useState<{ polylineIdx: number; pointIdx: number } | null>(null);
+  const [showRefWindow, setShowRefWindow] = useState(true);
+  const [canvasDims, setCanvasDims] = useState({ width: 1000, height: 600 });
 
   const POINT_RADIUS = 6;
   const HOVER_DISTANCE = 15;
 
-  // Draw function
+  // Set canvas dimensions on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCanvasDims({
+        width: window.innerWidth - 224,
+        height: window.innerHeight - 60,
+      });
+
+      const handleResize = () => {
+        setCanvasDims({
+          width: window.innerWidth - 224,
+          height: window.innerHeight - 60,
+        });
+      };
+
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
+
+  // Draw function with cute aesthetic
   const draw = (
     ctx: CanvasRenderingContext2D,
     width: number,
@@ -37,12 +68,12 @@ export default function PolyLineEditor() {
     hovered: { polylineIdx: number; pointIdx: number } | null,
     selected: { polylineIdx: number; pointIdx: number } | null
   ) => {
-    // Clear canvas
-    ctx.fillStyle = '#0f0f0f';
+    // Clear canvas with soft pink background
+    ctx.fillStyle = '#fef3f8';
     ctx.fillRect(0, 0, width, height);
 
-    // Draw grid
-    ctx.strokeStyle = '#2a2a2a';
+    // Draw subtle grid
+    ctx.strokeStyle = '#f0d5e0';
     ctx.lineWidth = 0.5;
     const gridSize = 30;
     for (let x = 0; x < width; x += gridSize) {
@@ -61,7 +92,9 @@ export default function PolyLineEditor() {
     // Draw completed polylines
     lines.forEach((line, lineIdx) => {
       ctx.strokeStyle = COLORS[lineIdx % COLORS.length];
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.beginPath();
       line.forEach((point, idx) => {
         if (idx === 0) ctx.moveTo(point.x, point.y);
@@ -74,18 +107,34 @@ export default function PolyLineEditor() {
         const isSelected = selected && selected.polylineIdx === lineIdx && selected.pointIdx === pointIdx;
         const isHovered = hovered && hovered.polylineIdx === lineIdx && hovered.pointIdx === pointIdx;
 
-        ctx.fillStyle = isSelected ? '#ff9900' : isHovered ? '#ffff00' : '#ffffff';
+        if (isSelected) {
+          ctx.fillStyle = '#ff6b35';
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, POINT_RADIUS + 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        ctx.fillStyle = isHovered ? '#ffd700' : '#ffffff';
         ctx.beginPath();
         ctx.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
         ctx.fill();
+        
+        // Add subtle shadow
+        ctx.strokeStyle = COLORS[lineIdx % COLORS.length];
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+        ctx.stroke();
       });
     });
 
     // Draw current polyline being drawn
     if (current.length > 0) {
-      ctx.strokeStyle = '#00f0ff';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = '#87ceeb';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.setLineDash([8, 4]);
       ctx.beginPath();
       current.forEach((point, idx) => {
         if (idx === 0) ctx.moveTo(point.x, point.y);
@@ -98,10 +147,15 @@ export default function PolyLineEditor() {
 
       // Draw points of current polyline
       current.forEach((point) => {
-        ctx.fillStyle = '#00f0ff';
+        ctx.fillStyle = '#87ceeb';
         ctx.beginPath();
         ctx.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
         ctx.fill();
+        ctx.strokeStyle = '#4da6d6';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, POINT_RADIUS, 0, Math.PI * 2);
+        ctx.stroke();
       });
     }
   };
@@ -266,16 +320,16 @@ export default function PolyLineEditor() {
   const totalPoints = polylines.reduce((sum, line) => sum + line.length, 0) + currentPolyline.length;
 
   return (
-    <div ref={containerRef} className="flex h-screen bg-gray-950 text-gray-100">
+    <div ref={containerRef} className="flex h-screen bg-pink-100 text-gray-800">
       {/* Toolbar */}
-      <div className="w-56 bg-gray-900 border-r border-gray-700 flex flex-col p-6 overflow-y-auto">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">PolyLine Editor</h1>
-          <p className="text-xs text-gray-400 mt-1">HCI Lab — CS 555</p>
+      <div className="w-56 bg-gradient-to-b from-pink-200 to-pink-100 border-r-4 border-pink-300 flex flex-col p-6 overflow-y-auto shadow-lg">
+        <div className="mb-6 bg-white rounded-xl p-4 border-2 border-pink-300">
+          <h1 className="text-xl font-bold text-pink-700">POLYLINE</h1>
+          <p className="text-xs text-pink-500 font-semibold">EDITOR v1.0</p>
         </div>
 
         {/* Buttons */}
-        <div className="space-y-4 flex-1">
+        <div className="space-y-3 flex-1">
           {/* Begin Button */}
           <button
             onClick={() => {
@@ -285,35 +339,35 @@ export default function PolyLineEditor() {
               }
               setMode('begin');
             }}
-            className={`w-full p-4 rounded-lg border-2 transition-all ${
+            className={`w-full p-3 rounded-xl border-3 transition-all ${
               mode === 'begin'
-                ? 'bg-green-600 border-green-400 shadow-lg shadow-green-500'
-                : 'bg-gray-800 border-gray-700 hover:border-green-500'
+                ? 'bg-green-300 border-green-500 shadow-lg text-green-800'
+                : 'bg-green-200 border-green-400 hover:bg-green-300 text-green-800'
             }`}
           >
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-2xl">🟢</span>
-              <span className="font-semibold">Begin</span>
-              <span className="ml-auto bg-gray-700 px-2 py-1 rounded text-xs font-mono">B</span>
+              <span className="text-xl">✏️</span>
+              <span className="font-bold text-sm">BEGIN</span>
+              <span className="ml-auto bg-white px-2 py-0.5 rounded text-xs font-bold border border-green-400">B</span>
             </div>
-            <p className="text-xs text-gray-300">Start a new polyline</p>
+            <p className="text-xs font-medium">Start a new polyline</p>
           </button>
 
           {/* Delete Button */}
           <button
             onClick={() => setMode('delete')}
-            className={`w-full p-4 rounded-lg border-2 transition-all ${
+            className={`w-full p-3 rounded-xl border-3 transition-all ${
               mode === 'delete'
-                ? 'bg-red-600 border-red-400 shadow-lg shadow-red-500'
-                : 'bg-gray-800 border-gray-700 hover:border-red-500'
+                ? 'bg-red-300 border-red-500 shadow-lg text-red-800'
+                : 'bg-red-200 border-red-400 hover:bg-red-300 text-red-800'
             }`}
           >
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-2xl">🔴</span>
-              <span className="font-semibold">Delete</span>
-              <span className="ml-auto bg-gray-700 px-2 py-1 rounded text-xs font-mono">D</span>
+              <span className="text-xl">🗑️</span>
+              <span className="font-bold text-sm">DELETE</span>
+              <span className="ml-auto bg-white px-2 py-0.5 rounded text-xs font-bold border border-red-400">D</span>
             </div>
-            <p className="text-xs text-gray-300">Delete nearest point</p>
+            <p className="text-xs font-medium">Delete nearest point</p>
           </button>
 
           {/* Move Button */}
@@ -323,34 +377,33 @@ export default function PolyLineEditor() {
               setSelectedPolylineIndex(null);
               setSelectedPointIndex(null);
             }}
-            className={`w-full p-4 rounded-lg border-2 transition-all ${
+            className={`w-full p-3 rounded-xl border-3 transition-all ${
               mode === 'move'
-                ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-500'
-                : 'bg-gray-800 border-gray-700 hover:border-blue-500'
+                ? 'bg-pink-300 border-pink-500 shadow-lg text-pink-800'
+                : 'bg-pink-200 border-pink-400 hover:bg-pink-300 text-pink-800'
             }`}
           >
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-2xl">🔵</span>
-              <span className="font-semibold">Move</span>
-              <span className="ml-auto bg-gray-700 px-2 py-1 rounded text-xs font-mono">M</span>
+              <span className="text-xl">✋</span>
+              <span className="font-bold text-sm">MOVE</span>
+              <span className="ml-auto bg-white px-2 py-0.5 rounded text-xs font-bold border border-pink-400">M</span>
             </div>
-            <p className="text-xs text-gray-300">Drag point to new location</p>
+            <p className="text-xs font-medium">Drag point to new location</p>
           </button>
 
           {/* Refresh Button */}
           <button
             onClick={() => {
-              // Trigger redraw
               setPolylines([...polylines]);
             }}
-            className="w-full p-4 rounded-lg border-2 bg-gray-800 border-gray-700 hover:border-gray-500 transition-all"
+            className="w-full p-3 rounded-xl border-3 bg-purple-200 border-purple-400 hover:bg-purple-300 text-purple-800 transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-2xl">🔄</span>
-              <span className="font-semibold">Refresh</span>
-              <span className="ml-auto bg-gray-700 px-2 py-1 rounded text-xs font-mono">R</span>
+              <span className="text-xl">🔄</span>
+              <span className="font-bold text-sm">REFRESH</span>
+              <span className="ml-auto bg-white px-2 py-0.5 rounded text-xs font-bold border border-purple-400">R</span>
             </div>
-            <p className="text-xs text-gray-300">Redraw all polylines</p>
+            <p className="text-xs font-medium">Redraw all polylines</p>
           </button>
 
           {/* Quit Button */}
@@ -362,76 +415,109 @@ export default function PolyLineEditor() {
               setSelectedPolylineIndex(null);
               setSelectedPointIndex(null);
             }}
-            className="w-full p-4 rounded-lg border-2 bg-gray-800 border-gray-600 hover:border-red-500 transition-all"
+            className="w-full p-3 rounded-xl border-3 bg-blue-200 border-blue-400 hover:bg-blue-300 text-blue-800 transition-all"
           >
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-2xl">⛔</span>
-              <span className="font-semibold">Quit</span>
-              <span className="ml-auto bg-gray-700 px-2 py-1 rounded text-xs font-mono">Q</span>
+              <span className="text-xl">❌</span>
+              <span className="font-bold text-sm">QUIT</span>
+              <span className="ml-auto bg-white px-2 py-0.5 rounded text-xs font-bold border border-blue-400">Q</span>
             </div>
-            <p className="text-xs text-gray-300">Exit / Reset canvas</p>
+            <p className="text-xs font-medium">Exit / Reset canvas</p>
           </button>
         </div>
 
-        {/* Legend */}
-        <div className="mt-8 pt-6 border-t border-gray-700 space-y-3">
-          <h3 className="text-xs font-semibold text-gray-300 uppercase">Point States</h3>
-          <div className="space-y-2 text-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-white"></div>
-              <span className="text-gray-400">Normal</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-              <span className="text-gray-400">Hovered</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-orange-400"></div>
-              <span className="text-gray-400">Selected</span>
-            </div>
+        {/* Cute emoji bar */}
+        <div className="mt-6 p-3 bg-white rounded-lg border-2 border-pink-300 text-center space-y-2">
+          <p className="text-xs font-bold text-pink-700">Pixel Friends</p>
+          <div className="flex justify-center gap-2 text-lg">
+            <span>💖</span>
+            <span>⭐</span>
+            <span>🎨</span>
+            <span>✨</span>
           </div>
         </div>
 
         {/* Instructions */}
-        <div className="mt-6 pt-6 border-t border-gray-700">
-          <p className="text-xs text-gray-500 leading-relaxed">
-            <strong className="text-gray-300">Double-click</strong> or press <kbd className="bg-gray-800 px-1 rounded text-gray-300">B</kbd> again to finish polyline.
+        <div className="mt-4 p-3 bg-white rounded-lg border-2 border-pink-300">
+          <p className="text-xs text-pink-700 leading-relaxed font-medium">
+            <strong>Double-click</strong> or press <kbd className="bg-pink-200 px-1 rounded text-pink-800 font-bold">B</kbd> again to finish polyline.
           </p>
         </div>
       </div>
 
       {/* Main Canvas Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col relative">
         <canvas
           ref={canvasRef}
-          width={typeof window !== 'undefined' ? window.innerWidth - 224 : 1000}
-          height={typeof window !== 'undefined' ? window.innerHeight - 60 : 600}
+          width={canvasDims.width}
+          height={canvasDims.height}
           onMouseMove={handleMouseMove}
           onClick={handleCanvasClick}
           onDoubleClick={finishPolyline}
-          className="flex-1 cursor-crosshair bg-gray-950"
+          className="flex-1 cursor-crosshair"
         />
 
-        {/* Status Bar */}
-        <div className="h-14 bg-gray-900 border-t border-gray-700 flex items-center px-6 gap-8">
-          <div className="text-sm">
-            <span className="text-gray-400">Mode:</span>
-            <span className="ml-2 font-semibold text-cyan-400 uppercase">{mode}</span>
+        {/* Floating "Meow!" indicator */}
+        <div className="absolute top-6 right-6 bg-white px-4 py-2 rounded-full border-3 border-pink-400 shadow-lg">
+          <span className="text-2xl">😻</span>
+          <p className="text-xs font-bold text-pink-700 mt-1">Meow!</p>
+        </div>
+
+        {/* Floating Build Ideas Window */}
+        {showRefWindow && (
+          <div className="absolute right-6 top-24 w-80 bg-white rounded-xl border-4 border-yellow-300 shadow-xl overflow-hidden">
+            <div className="bg-gradient-to-r from-yellow-300 to-orange-200 p-3 flex items-center justify-between">
+              <h3 className="font-bold text-sm text-gray-800">BUILD IDEAS</h3>
+              <button
+                onClick={() => setShowRefWindow(false)}
+                className="bg-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-gray-200"
+              >
+                ×
+              </button>
+            </div>
+            <div className="p-4 space-y-3 max-h-80 overflow-y-auto bg-yellow-50">
+              {BUILD_IDEAS.map((idea, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white p-3 rounded-lg border-2 border-yellow-200 hover:border-yellow-400 cursor-pointer transition-all hover:shadow-md"
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl">{idea.icon}</span>
+                    <span className="font-bold text-sm text-gray-800">{idea.name}</span>
+                  </div>
+                  <p className="text-xs text-gray-600 ml-8">{idea.points} points</p>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="text-sm">
-            <span className="text-gray-400">Position:</span>
-            <span className="ml-2 font-mono text-cyan-400">
+        )}
+
+        {/* Status Bar */}
+        <div className="h-14 bg-gradient-to-r from-pink-300 to-blue-200 border-t-4 border-pink-300 flex items-center px-6 gap-8 shadow-lg">
+          <div className="text-sm font-bold">
+            <span className="text-gray-600">Mode:</span>
+            <span className="ml-2 text-pink-700 uppercase">{mode || 'idle'}</span>
+          </div>
+          <div className="text-sm font-bold">
+            <span className="text-gray-600">Position:</span>
+            <span className="ml-2 font-mono text-blue-700">
               {Math.round(mousePos.x)}, {Math.round(mousePos.y)}
             </span>
           </div>
-          <div className="text-sm">
-            <span className="text-gray-400">Polylines:</span>
-            <span className="ml-2 font-semibold text-cyan-400">{polylines.length}</span>
+          <div className="text-sm font-bold">
+            <span className="text-gray-600">Polylines:</span>
+            <span className="ml-2 text-pink-700">{polylines.length}</span>
           </div>
-          <div className="text-sm">
-            <span className="text-gray-400">Points:</span>
-            <span className="ml-2 font-semibold text-cyan-400">{totalPoints}</span>
+          <div className="text-sm font-bold">
+            <span className="text-gray-600">Points:</span>
+            <span className="ml-2 text-blue-700">{totalPoints}</span>
           </div>
+          <button
+            onClick={() => setShowRefWindow(!showRefWindow)}
+            className="ml-auto bg-white px-3 py-1 rounded-full text-xs font-bold text-pink-700 border-2 border-pink-400 hover:bg-pink-100"
+          >
+            {showRefWindow ? '✓' : '?'} Ideas
+          </button>
         </div>
       </div>
     </div>
