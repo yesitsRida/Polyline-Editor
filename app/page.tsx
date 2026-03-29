@@ -44,7 +44,7 @@ export default function PolyLineEditor() {
 
   // Glitter burst effect
   const createGlitterBurst = (x: number, y: number) => {
-    const newGlitters = Array.from({ length: 15 }, (_, i) => ({
+    const newGlitters = Array.from({ length: 25 }, (_, i) => ({
       x,
       y,
       id: Date.now() + i,
@@ -338,8 +338,8 @@ export default function PolyLineEditor() {
   return (
     <div ref={containerRef} className="flex h-screen bg-pink-100 text-gray-800">
       {/* Toolbar */}
-      <div className="w-56 bg-gradient-to-b from-pink-200 to-pink-100 border-r-4 border-pink-300 flex flex-col p-6 overflow-y-auto shadow-lg">
-        <div className="mb-6 bg-white rounded-xl p-4 border-2 border-pink-300">
+      <div className="w-56 bg-gradient-to-b from-pink-200 via-pink-150 to-blue-100 border-r-4 border-pink-300 flex flex-col p-6 overflow-y-auto shadow-lg">
+        <div className="mb-6 bg-white rounded-xl p-4 shadow-md">
           <h1 className="text-xl font-bold text-pink-700">POLYLINE</h1>
           <p className="text-xs text-pink-500 font-semibold">EDITOR v1.0</p>
         </div>
@@ -355,15 +355,15 @@ export default function PolyLineEditor() {
               }
               setMode('begin');
             }}
-            className={`w-full p-3 rounded-xl border-3 transition-all font-['Quicksand'] font-bold ${
+            className={`w-full p-3 rounded-xl transition-all font-['Quicksand'] font-bold ${
               mode === 'begin'
-                ? 'bg-green-300 border-green-500 shadow-lg text-green-800'
-                : 'bg-green-200 border-green-400 hover:bg-green-300 text-green-800'
+                ? 'bg-green-300 shadow-xl text-green-800'
+                : 'bg-green-200 hover:bg-green-300 text-green-800 shadow-md hover:shadow-lg'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-sm">BEGIN</span>
-              <span className="bg-white px-2 py-0.5 rounded text-xs font-bold border border-green-400">B</span>
+              <span className="bg-white px-2 py-0.5 rounded text-xs font-bold shadow-sm">B</span>
             </div>
             <p className="text-xs font-medium">Start a new polyline</p>
           </button>
@@ -371,15 +371,15 @@ export default function PolyLineEditor() {
           {/* Delete Button */}
           <button
             onClick={() => setMode('delete')}
-            className={`w-full p-3 rounded-xl border-3 transition-all font-['Quicksand'] font-bold ${
+            className={`w-full p-3 rounded-xl transition-all font-['Quicksand'] font-bold ${
               mode === 'delete'
-                ? 'bg-red-300 border-red-500 shadow-lg text-red-800'
-                : 'bg-red-200 border-red-400 hover:bg-red-300 text-red-800'
+                ? 'bg-red-300 shadow-xl text-red-800'
+                : 'bg-red-200 hover:bg-red-300 text-red-800 shadow-md hover:shadow-lg'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-sm">DELETE</span>
-              <span className="bg-white px-2 py-0.5 rounded text-xs font-bold border border-red-400">D</span>
+              <span className="bg-white px-2 py-0.5 rounded text-xs font-bold shadow-sm">D</span>
             </div>
             <p className="text-xs font-medium">Delete nearest point</p>
           </button>
@@ -391,15 +391,15 @@ export default function PolyLineEditor() {
               setSelectedPolylineIndex(null);
               setSelectedPointIndex(null);
             }}
-            className={`w-full p-3 rounded-xl border-3 transition-all font-['Quicksand'] font-bold ${
+            className={`w-full p-3 rounded-xl transition-all font-['Quicksand'] font-bold ${
               mode === 'move'
-                ? 'bg-pink-300 border-pink-500 shadow-lg text-pink-800'
-                : 'bg-pink-200 border-pink-400 hover:bg-pink-300 text-pink-800'
+                ? 'bg-pink-300 shadow-xl text-pink-800'
+                : 'bg-pink-200 hover:bg-pink-300 text-pink-800 shadow-md hover:shadow-lg'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-sm">MOVE</span>
-              <span className="ml-auto bg-white px-2 py-0.5 rounded text-xs font-bold border border-pink-400">M</span>
+              <span className="bg-white px-2 py-0.5 rounded text-xs font-bold shadow-sm">M</span>
             </div>
             <p className="text-xs font-medium">Drag point to new location</p>
           </button>
@@ -413,18 +413,18 @@ export default function PolyLineEditor() {
               setSelectedPolylineIndex(null);
               setSelectedPointIndex(null);
             }}
-            className="w-full p-3 rounded-xl border-3 bg-blue-200 border-blue-400 hover:bg-blue-300 text-blue-800 transition-all font-['Quicksand'] font-bold"
+            className="w-full p-3 rounded-xl bg-blue-200 hover:bg-blue-300 text-blue-800 transition-all font-['Quicksand'] font-bold shadow-md hover:shadow-lg"
           >
             <div className="flex items-center justify-between mb-1">
               <span className="text-sm">QUIT</span>
-              <span className="bg-white px-2 py-0.5 rounded text-xs font-bold border border-blue-400">Q</span>
+              <span className="bg-white px-2 py-0.5 rounded text-xs font-bold shadow-sm">Q</span>
             </div>
             <p className="text-xs font-medium">Exit / Reset canvas</p>
           </button>
         </div>
 
         {/* Mood Selector */}
-        <div className="mt-6 p-3 bg-white rounded-xl border-3 border-pink-300 text-center space-y-2">
+        <div className="mt-6 p-3 bg-white rounded-xl text-center space-y-2 shadow-md">
           <p className="text-xs font-bold text-pink-700 font-['Quicksand']">MOOD:</p>
           <div className="flex justify-center gap-1">
             {[1, 2, 3, 4, 5].map((m) => (
@@ -442,7 +442,7 @@ export default function PolyLineEditor() {
         </div>
 
         {/* Instructions */}
-        <div className="mt-4 p-3 bg-white rounded-lg border-2 border-pink-300">
+        <div className="mt-4 p-3 bg-white rounded-lg shadow-md">
           <p className="text-xs text-pink-700 leading-relaxed font-medium">
             <strong>Double-click</strong> or press <kbd className="bg-pink-200 px-1 rounded text-pink-800 font-bold">B</kbd> again to finish polyline.
           </p>
@@ -450,7 +450,7 @@ export default function PolyLineEditor() {
       </div>
 
       {/* Main Canvas Area */}
-      <div className="flex-1 flex flex-col relative">
+      <div className="flex-1 flex flex-col relative" suppressHydrationWarning>
         <canvas
           ref={canvasRef}
           width={canvasDims.width}
@@ -463,10 +463,10 @@ export default function PolyLineEditor() {
         />
 
         {/* Floating Glitter Bow Button */}
-        <div className="absolute top-6 right-6 relative">
+        <div className="absolute top-8 right-8 relative z-50">
           <button
-            onClick={(e) => createGlitterBurst(e.currentTarget.offsetLeft + 20, e.currentTarget.offsetTop + 20)}
-            className="text-5xl hover:scale-110 transition-transform cursor-pointer"
+            onClick={(e) => createGlitterBurst(e.currentTarget.getBoundingClientRect().right - 20, e.currentTarget.getBoundingClientRect().top + 20)}
+            className="text-6xl hover:scale-125 transition-transform cursor-pointer drop-shadow-lg"
           >
             🎀
           </button>
@@ -571,28 +571,28 @@ export default function PolyLineEditor() {
         )}
 
         {/* Status Bar */}
-        <div className="h-14 bg-gradient-to-r from-pink-300 to-blue-200 border-t-4 border-pink-300 flex items-center px-6 gap-8 shadow-lg font-['Quicksand']">
-          <div className="text-sm font-bold">
-            <span className="text-gray-600">Mode:</span>
-            <span className="ml-2 text-pink-700 uppercase">{mode || 'idle'}</span>
+        <div className="h-14 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 border-t-4 border-cyan-500 flex items-center px-6 gap-12 shadow-lg font-['Quicksand']">
+          <div className="text-sm font-bold flex items-center gap-2">
+            <span className="text-gray-400">Mode:</span>
+            <span className="text-cyan-400 uppercase font-mono">{mode === 'idle' ? 'BEGIN' : mode.toUpperCase()}</span>
           </div>
-          <div className="text-sm font-bold">
-            <span className="text-gray-600">Position:</span>
-            <span className="ml-2 font-mono text-blue-700">
+          <div className="text-sm font-bold flex items-center gap-2">
+            <span className="text-gray-400">Position:</span>
+            <span className="font-mono text-cyan-400">
               {Math.round(mousePos.x)}, {Math.round(mousePos.y)}
             </span>
           </div>
-          <div className="text-sm font-bold">
-            <span className="text-gray-600">Polylines:</span>
-            <span className="ml-2 text-pink-700">{polylines.length}</span>
+          <div className="text-sm font-bold flex items-center gap-2">
+            <span className="text-gray-400">Polylines:</span>
+            <span className="text-cyan-400 font-mono">{polylines.length}</span>
           </div>
-          <div className="text-sm font-bold">
-            <span className="text-gray-600">Points:</span>
-            <span className="ml-2 text-blue-700">{totalPoints}</span>
+          <div className="text-sm font-bold flex items-center gap-2">
+            <span className="text-gray-400">Points:</span>
+            <span className="text-cyan-400 font-mono">{totalPoints}</span>
           </div>
           <button
             onClick={() => setShowRefWindow(!showRefWindow)}
-            className="ml-auto bg-white px-3 py-1 rounded-full text-xs font-bold text-pink-700 border-2 border-pink-400 hover:bg-pink-100"
+            className="ml-auto bg-white px-3 py-1 rounded-full text-xs font-bold text-pink-700 shadow-md hover:shadow-lg transition-all"
           >
             {showRefWindow ? '✓' : '?'} Ideas
           </button>
