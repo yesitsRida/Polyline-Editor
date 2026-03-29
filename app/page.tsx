@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 // Types
 type Point = { x: number; y: number };
@@ -12,11 +12,9 @@ const COLORS = ['#ff69b4', '#87ceeb', '#ffd700', '#98d8c8', '#f7a8dc', '#b4a7d6'
 
 // Build ideas reference shapes
 const BUILD_IDEAS = [
-  { name: 'Tiny house', points: 5, icon: '🏠' },
-  { name: 'Rocket cat', points: 8, icon: '🚀' },
-  { name: 'Bunny face', points: 9, icon: '🐰' },
-  { name: 'Star', points: 10, icon: '⭐' },
-  { name: 'Heart', points: 12, icon: '❤️' },
+  { name: 'Tiny house', icon: '🏠' },
+  { name: 'Star', icon: '⭐' },
+  { name: 'Heart', icon: '❤️' },
 ];
 
 export default function PolyLineEditor() {
@@ -38,6 +36,7 @@ export default function PolyLineEditor() {
   const [windowPos, setWindowPos] = useState({ x: 600, y: 100 });
   const [isDraggingWindow, setIsDraggingWindow] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isHydrated, setIsHydrated] = useState(false);
 
   const POINT_RADIUS = 6;
   const HOVER_DISTANCE = 15;
@@ -55,6 +54,8 @@ export default function PolyLineEditor() {
 
   // Set canvas dimensions on mount
   useEffect(() => {
+    setIsHydrated(true);
+    
     if (typeof window !== 'undefined') {
       setCanvasDims({
         width: window.innerWidth - 224,
@@ -177,7 +178,7 @@ export default function PolyLineEditor() {
   };
 
   // Find nearest point
-  const findNearestPoint = (x: number, y: number): { polylineIdx: number; pointIdx: number } | null => {
+  const findNearestPoint = useCallback((x: number, y: number): { polylineIdx: number; pointIdx: number } | null => {
     let nearest: { polylineIdx: number; pointIdx: number } | null = null;
     let minDist = HOVER_DISTANCE;
 
@@ -201,7 +202,7 @@ export default function PolyLineEditor() {
     });
 
     return nearest;
-  };
+  }, [polylines, currentPolyline]);
 
   // Canvas drawing effect
   useEffect(() => {
@@ -222,7 +223,7 @@ export default function PolyLineEditor() {
   }, [polylines, currentPolyline, mousePos, selectedPolylineIndex, selectedPointIndex]);
 
   // Mouse move
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -231,10 +232,10 @@ export default function PolyLineEditor() {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
     });
-  };
+  }, []);
 
   // Mouse click
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleCanvasClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -283,7 +284,7 @@ export default function PolyLineEditor() {
         setSelectedPointIndex(null);
       }
     }
-  };
+  }, [mode, polylines, currentPolyline, selectedPolylineIndex, selectedPointIndex, findNearestPoint]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -355,15 +356,15 @@ export default function PolyLineEditor() {
               }
               setMode('begin');
             }}
-            className={`w-full p-3 rounded-xl transition-all font-['Quicksand'] font-bold ${
+            className={`w-full p-3 rounded-xl transition-all font-bold ${
               mode === 'begin'
                 ? 'bg-green-300 shadow-xl text-green-800'
                 : 'bg-green-200 hover:bg-green-300 text-green-800 shadow-md hover:shadow-lg'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-sm">BEGIN</span>
-              <span className="bg-white px-2 py-0.5 rounded text-xs font-bold shadow-sm">B</span>
+              <span className="text-sm font-bold">BEGIN</span>
+              <span className="bg-white px-2 py-0.5 rounded text-xs font-bold">B</span>
             </div>
             <p className="text-xs font-medium">Start a new polyline</p>
           </button>
@@ -371,7 +372,7 @@ export default function PolyLineEditor() {
           {/* Delete Button */}
           <button
             onClick={() => setMode('delete')}
-            className={`w-full p-3 rounded-xl transition-all font-['Quicksand'] font-bold ${
+            className={`w-full p-3 rounded-xl transition-all font-bold ${
               mode === 'delete'
                 ? 'bg-red-300 shadow-xl text-red-800'
                 : 'bg-red-200 hover:bg-red-300 text-red-800 shadow-md hover:shadow-lg'
@@ -391,7 +392,7 @@ export default function PolyLineEditor() {
               setSelectedPolylineIndex(null);
               setSelectedPointIndex(null);
             }}
-            className={`w-full p-3 rounded-xl transition-all font-['Quicksand'] font-bold ${
+            className={`w-full p-3 rounded-xl transition-all font-bold ${
               mode === 'move'
                 ? 'bg-pink-300 shadow-xl text-pink-800'
                 : 'bg-pink-200 hover:bg-pink-300 text-pink-800 shadow-md hover:shadow-lg'
@@ -425,7 +426,7 @@ export default function PolyLineEditor() {
 
         {/* Mood Selector */}
         <div className="mt-6 p-3 bg-white rounded-xl text-center space-y-2 shadow-md">
-          <p className="text-xs font-bold text-pink-700 font-['Quicksand']">MOOD:</p>
+          <p className="text-xs font-bold text-pink-700">MOOD:</p>
           <div className="flex justify-center gap-1">
             {[1, 2, 3, 4, 5].map((m) => (
               <button
@@ -463,27 +464,40 @@ export default function PolyLineEditor() {
         />
 
         {/* Floating Glitter Bow Button */}
-        <div className="absolute top-8 right-8 relative z-50">
-          <button
-            onClick={(e) => createGlitterBurst(e.currentTarget.getBoundingClientRect().right - 20, e.currentTarget.getBoundingClientRect().top + 20)}
-            className="text-6xl hover:scale-125 transition-transform cursor-pointer drop-shadow-lg"
-          >
-            🎀
-          </button>
-          {glitters.map((g) => (
-            <div
-              key={g.id}
-              className="absolute pointer-events-none animate-pulse"
-              style={{
-                left: g.x,
-                top: g.y,
-                fontSize: '12px',
-                animation: `burst 0.8s ease-out forwards`,
-              }}
-            >
-              ✨
-            </div>
-          ))}
+        <button
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            createGlitterBurst(rect.left + rect.width / 2, rect.top + rect.height / 2);
+          }}
+          className="absolute top-6 right-8 text-3xl hover:scale-110 transition-transform cursor-pointer z-50"
+        >
+          🎀
+        </button>
+
+        {/* Glitter particles */}
+        <div className="absolute inset-0 pointer-events-none z-40">
+          {glitters.map((g, idx) => {
+            const angle = (idx / glitters.length) * Math.PI * 2;
+            const distance = 60;
+            const tx = Math.cos(angle) * distance;
+            const ty = Math.sin(angle) * distance;
+            return (
+              <div
+                key={g.id}
+                className="absolute"
+                style={{
+                  left: g.x,
+                  top: g.y,
+                  fontSize: '14px',
+                  animation: `burst 0.8s ease-out forwards`,
+                  '--tx': `${tx}px`,
+                  '--ty': `${ty}px`,
+                } as React.CSSProperties}
+              >
+                ✨
+              </div>
+            );
+          })}
         </div>
 
         <style>{`
@@ -494,12 +508,8 @@ export default function PolyLineEditor() {
             }
             100% {
               opacity: 0;
-              transform: translate(var(--tx, 20px), var(--ty, 20px)) scale(0);
+              transform: translate(var(--tx), var(--ty)) scale(0);
             }
-          }
-          div[style*="left"] {
-            --tx: ${Math.random() * 60 - 30}px;
-            --ty: ${Math.random() * 60 - 30}px;
           }
         `}</style>
 
@@ -525,7 +535,7 @@ export default function PolyLineEditor() {
               data-drag-handle
               className="bg-gradient-to-r from-yellow-300 to-orange-200 p-2 flex items-center justify-between cursor-grab active:cursor-grabbing"
             >
-              <h3 className="font-bold text-xs text-gray-800 font-['Quicksand']">BUILD IDEAS</h3>
+              <h3 className="font-bold text-xs text-gray-800">BUILD IDEAS</h3>
               <button
                 onClick={() => setShowRefWindow(false)}
                 className="bg-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold hover:bg-gray-200"
@@ -541,7 +551,7 @@ export default function PolyLineEditor() {
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{idea.icon}</span>
-                    <span className="font-bold text-xs text-gray-800 font-['Quicksand']">{idea.name}</span>
+                    <span className="font-bold text-xs text-gray-800">{idea.name}</span>
                   </div>
                 </div>
               ))}
@@ -571,24 +581,24 @@ export default function PolyLineEditor() {
         )}
 
         {/* Status Bar */}
-        <div className="h-14 bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 border-t-4 border-cyan-500 flex items-center px-6 gap-12 shadow-lg font-['Quicksand']">
+        <div className="h-14 bg-gradient-to-r from-pink-300 via-blue-200 to-purple-300 border-t-4 border-pink-400 flex items-center px-6 gap-12 shadow-lg">
           <div className="text-sm font-bold flex items-center gap-2">
-            <span className="text-gray-400">Mode:</span>
-            <span className="text-cyan-400 uppercase font-mono">{mode === 'idle' ? 'BEGIN' : mode.toUpperCase()}</span>
+            <span className="text-gray-700">Mode:</span>
+            <span className="text-gray-800 uppercase">{mode === 'idle' ? 'BEGIN' : mode.toUpperCase()}</span>
           </div>
           <div className="text-sm font-bold flex items-center gap-2">
-            <span className="text-gray-400">Position:</span>
-            <span className="font-mono text-cyan-400">
+            <span className="text-gray-700">Position:</span>
+            <span className="text-gray-800">
               {Math.round(mousePos.x)}, {Math.round(mousePos.y)}
             </span>
           </div>
           <div className="text-sm font-bold flex items-center gap-2">
-            <span className="text-gray-400">Polylines:</span>
-            <span className="text-cyan-400 font-mono">{polylines.length}</span>
+            <span className="text-gray-700">Polylines:</span>
+            <span className="text-gray-800">{polylines.length}</span>
           </div>
           <div className="text-sm font-bold flex items-center gap-2">
-            <span className="text-gray-400">Points:</span>
-            <span className="text-cyan-400 font-mono">{totalPoints}</span>
+            <span className="text-gray-700">Points:</span>
+            <span className="text-gray-800">{totalPoints}</span>
           </div>
           <button
             onClick={() => setShowRefWindow(!showRefWindow)}
