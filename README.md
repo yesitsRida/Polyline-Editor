@@ -1,5 +1,14 @@
 # 🎨 Design Process
-This is the design process and also the prototype of this editor.
+My learning journey for the design was not that detailed but i had much learning from deplying my first ever app on vercel.
+It was quite confusing when, evevrything was done yet still the app wasn't live!!! Turns out you need to Commit anyy changes to your repo to trigger the deployment on vercel.
+Although i connected the v0.app with my github and vercel but still it was quite a journey.
+
+Anyways this is my detailed design process by AI to the details i provided to it: 
+The design process started with searching the internet for the already present projects , i came across this one : 
+ (Link)Polyline Editor
+and i used this as a reference, for the theme i saw a few pink posts and i just wanted to make use that , i added a few emojies too after Dr HUMERA's lecture on design, to add some emotion in the design. and also to make it a little different i added a floating window that gives some ideas for the user to make. Then i used v0.app to bring this design to reality its a work in process but it does all the required functions.
+
+---
 
 A modern, fun, and user-friendly web-based **Polyline Editor** for drawing, editing, and experimenting with polylines. Built with a vibrant pink theme, thoughtful interactions, and helpful creative prompts.
 
@@ -77,5 +86,5 @@ Feedback and contributions are always welcome! Feel free to open issues or pull 
 ---
 
 Made with ❤️ and pink vibes  
-*Inspired by HCI principles from Alan Dix et al. and Dr. Humera's lectures on emotional design.*
+*Inspired by HCI principles from Alan Dix et al. and Dr. Humera's lectures.*
 
