@@ -87,5 +87,5 @@ Feedback and contributions are always welcome! Feel free to open issues or pull 
 ---
 
 Made with ❤️ and pink vibes  
-*Inspired by HCI principles from Alan Dix et al. and Dr. Humera's lectures.*
+*Inspired by HCI principles from Alan Dix and Dr. Humera's lectures.*
 
