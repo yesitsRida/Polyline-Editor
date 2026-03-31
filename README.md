@@ -4,7 +4,8 @@ It was quite confusing when, evevrything was done yet still the app wasn't live!
 Although i connected the v0.app with my github and vercel but still it was quite a journey.
 
 Anyways this is my detailed design process by AI to the details i provided to it: 
-The design process started with searching the internet for the already present projects , i came across this one : 
+
+   The design process started with searching the internet for the already present projects , i came across this one : 
  (Link)Polyline Editor
 and i used this as a reference, for the theme i saw a few pink posts and i just wanted to make use that , i added a few emojies too after Dr HUMERA's lecture on design, to add some emotion in the design. and also to make it a little different i added a floating window that gives some ideas for the user to make. Then i used v0.app to bring this design to reality its a work in process but it does all the required functions.
 
