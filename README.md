@@ -1,5 +1,7 @@
-# 🎨 Design Process
-My learning journey for the design was not that detailed but i had much learning from deplying my first ever app on vercel.
+# 🎨 Design Process (README File In Progress)
+My learning journey for the design was (i need to add the graphical and other learnings here as well with the book references )
+
+I also had much learning from deploying my first ever app on vercel.
 It was quite confusing when, evevrything was done yet still the app wasn't live!!! Turns out you need to Commit anyy changes to your repo to trigger the deployment on vercel.
 Although i connected the v0.app with my github and vercel but still it was quite a journey.
 
