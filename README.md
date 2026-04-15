@@ -1,13 +1,11 @@
 # 🎨 Design Process (README File In Progress)
-My learning journey for the design was (i need to add the graphical and other learnings here as well with the book references )
-
-I also had much learning from deploying my first ever app on vercel.
+I had much learning from deploying my first ever app on vercel.
 It was quite confusing when, evevrything was done yet still the app wasn't live!!! Turns out you need to Commit anyy changes to your repo to trigger the deployment on vercel.
 Although i connected the v0.app with my github and vercel but still it was quite a journey.
 
 Anyways this is my detailed design process by AI to the details i provided to it: 
 
-   The design process started with searching the internet for the already present projects , i came across this one : 
+The design process started with reading the Section 5.3 of the Alan Dix Book ( The Design Process) gave me a structure to think about my design innterface after that I started searching the internet for the already present projects , i came across this one : 
 https://polyline-editor-lab.vercel.app/
 and i used this as a reference, for the theme i saw a few pink posts and i just wanted to make use that , i added a few emojies too after Dr HUMERA's lecture on design, to add some emotion in the design. and also to make it a little different i added a floating window that gives some ideas for the user to make. Then i used v0.app to bring this design to reality its a work in process but it does all the required functions.
 
